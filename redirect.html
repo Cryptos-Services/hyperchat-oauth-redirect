@@ -3,18 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redirection OAuth</title>
+  <title>Connexion réussie</title>
   <style>
-    body { background: #181818; color: #fff; font-family: sans-serif; text-align: center; margin-top: 80px; }
-    .token { color: #8fff8f; font-weight: bold; }
-    .error { color: #ff8f8f; }
+    body {
+      background: #181818;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      text-align: center;
+      margin-top: 80px;
+    }
+    .success {
+      color: #8fff8f;
+      font-size: 2em;
+      margin-bottom: 20px;
+      font-weight: bold;
+    }
+    .info {
+      color: #aaa;
+      margin-top: 20px;
+      font-size: 1.1em;
+    }
+    .error {
+      color: #ff8f8f;
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>Connexion en cours...</h2>
   <div id="result"></div>
   <script>
-    // Récupère le code ou le token dans l'URL
     const params = new URLSearchParams(window.location.search);
     const hash = window.location.hash;
 
@@ -22,7 +40,6 @@
     let error = params.get('error');
     let token = null;
 
-    // Pour les flows implicites (token dans le hash)
     if (!code && hash) {
       const match = hash.match(/access_token=([^&]+)/);
       if (match) token = match[1];
@@ -30,18 +47,16 @@
 
     const resultDiv = document.getElementById('result');
 
-    if (code) {
-      resultDiv.innerHTML = `Code reçu : <span class="token">${code}</span><br>Vous pouvez fermer cette fenêtre.`;
-      // Envoie le code à la fenêtre Electron par postMessage
-      window.opener && window.opener.postMessage({ type: 'oauth-code', code }, '*');
-    } else if (token) {
-      resultDiv.innerHTML = `Token reçu : <span class="token">${token}</span><br>Vous pouvez fermer cette fenêtre.`;
-      window.opener && window.opener.postMessage({ type: 'oauth-token', token }, '*');
+    if (code || token) {
+      resultDiv.innerHTML = `
+        <div class="success">✅ Connexion réussie !</div>
+        <div class="info">Vous pouvez fermer cette fenêtre.<br>La connexion à la plateforme a bien été prise en compte.</div>
+      `;
+      setTimeout(() => window.close(), 1500);
     } else if (error) {
-      resultDiv.innerHTML = `<span class="error">Erreur OAuth : ${error}</span>`;
-      window.opener && window.opener.postMessage({ type: 'oauth-error', error }, '*');
+      resultDiv.innerHTML = `<div class="error">Erreur OAuth : ${error}</div>`;
     } else {
-      resultDiv.innerHTML = `<span class="error">Aucun code/token trouvé dans l'URL.</span>`;
+      resultDiv.innerHTML = `<div class="error">Aucun code/token trouvé dans l'URL.</div>`;
     }
   </script>
 </body>
